@@ -12,6 +12,7 @@ import Companies from "@/pages/Companies";
 import Users from "@/pages/Users";
 import Approvals from "@/pages/Approvals";
 import Reports from "@/pages/Reports";
+import Calendar from "@/pages/Calendar";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import NotFound from "./pages/NotFound";
 
@@ -30,6 +31,7 @@ const AppRoutes = () => {
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/companies" element={<Companies />} />
+        <Route path="/calendar" element={<Calendar />} />
         <Route 
           path="/users" 
           element={
