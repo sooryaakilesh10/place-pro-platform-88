@@ -8,6 +8,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import { User as UserIcon, Users } from 'lucide-react';
 
 interface CompanyFormProps {
   company?: Company | null;
@@ -78,6 +80,10 @@ const CompanyForm: React.FC<CompanyFormProps> = ({ company, onSubmit, onCancel }
   };
 
   const canAssignUsers = user?.role === 'Admin' || user?.role === 'Manager';
+
+  const getSelectedUser = () => {
+    return availableUsers.find(u => u.username === formData.assignedOfficer);
+  };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -170,21 +176,73 @@ const CompanyForm: React.FC<CompanyFormProps> = ({ company, onSubmit, onCancel }
         </div>
 
         {canAssignUsers && (
-          <div className="space-y-2">
-            <Label htmlFor="assignedOfficer">Assign Officer/Manager</Label>
-            <Select value={formData.assignedOfficer} onValueChange={(value) => handleChange('assignedOfficer', value)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select user to assign" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="">Unassigned</SelectItem>
-                {availableUsers.map((user) => (
-                  <SelectItem key={user.id} value={user.username}>
-                    {user.username} ({user.role})
+          <div className="space-y-3 md:col-span-2">
+            <div className="bg-gradient-to-r from-blue-50/50 to-indigo-50/50 backdrop-blur-sm border border-blue-200/30 rounded-lg p-4">
+              <div className="flex items-center space-x-2 mb-3">
+                <div className="flex items-center justify-center w-8 h-8 bg-blue-100/80 rounded-full backdrop-blur-sm">
+                  <Users className="h-4 w-4 text-blue-600" />
+                </div>
+                <Label className="text-base font-semibold text-blue-900">Assign Officer/Manager</Label>
+              </div>
+              
+              <Select value={formData.assignedOfficer} onValueChange={(value) => handleChange('assignedOfficer', value)}>
+                <SelectTrigger className="bg-white/80 backdrop-blur-sm border-blue-200/50 hover:bg-white/90 transition-all duration-200">
+                  <SelectValue placeholder="Select user to assign">
+                    {formData.assignedOfficer && (
+                      <div className="flex items-center space-x-2">
+                        <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
+                          <UserIcon className="h-3 w-3 text-blue-600" />
+                        </div>
+                        <span className="text-sm font-medium">{getSelectedUser()?.username}</span>
+                        <Badge variant="outline" className="text-xs bg-blue-50/80 text-blue-700 border-blue-200">
+                          {getSelectedUser()?.role}
+                        </Badge>
+                      </div>
+                    )}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent className="bg-white/95 backdrop-blur-md border-blue-200/50">
+                  <SelectItem value="" className="hover:bg-blue-50/50">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-6 h-6 bg-gray-100 rounded-full flex items-center justify-center">
+                        <UserIcon className="h-3 w-3 text-gray-400" />
+                      </div>
+                      <span className="text-gray-500">Unassigned</span>
+                    </div>
                   </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+                  {availableUsers.map((user) => (
+                    <SelectItem key={user.id} value={user.username} className="hover:bg-blue-50/50">
+                      <div className="flex items-center space-x-2">
+                        <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
+                          <UserIcon className="h-3 w-3 text-blue-600" />
+                        </div>
+                        <span className="font-medium">{user.username}</span>
+                        <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
+                          {user.role}
+                        </Badge>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              {formData.assignedOfficer && (
+                <div className="mt-3 p-3 bg-white/60 backdrop-blur-sm rounded-md border border-blue-200/30">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-8 h-8 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-full flex items-center justify-center">
+                      <UserIcon className="h-4 w-4 text-blue-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-blue-900">{getSelectedUser()?.username}</p>
+                      <p className="text-xs text-blue-600">{getSelectedUser()?.email}</p>
+                      <Badge variant="outline" className="text-xs mt-1 bg-blue-50/80 text-blue-700 border-blue-200">
+                        {getSelectedUser()?.role}
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         )}
 
