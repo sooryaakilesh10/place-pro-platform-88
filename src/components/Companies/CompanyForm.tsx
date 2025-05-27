@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Company } from '@/types';
+import { Company, User } from '@/types';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -32,6 +32,36 @@ const CompanyForm: React.FC<CompanyFormProps> = ({ company, onSubmit, onCancel }
     assignedOfficer: '',
   });
 
+  const [availableUsers, setAvailableUsers] = useState<User[]>([]);
+
+  useEffect(() => {
+    // Mock users data - in real app, fetch from API
+    const mockUsers: User[] = [
+      {
+        id: '2',
+        username: 'manager1',
+        email: 'manager1@company.com',
+        role: 'Manager',
+        createdAt: '2024-01-05T00:00:00Z'
+      },
+      {
+        id: '3',
+        username: 'officer1',
+        email: 'officer1@company.com',
+        role: 'Officer',
+        createdAt: '2024-01-10T00:00:00Z'
+      },
+      {
+        id: '4',
+        username: 'officer2',
+        email: 'officer2@company.com',
+        role: 'Officer',
+        createdAt: '2024-01-12T00:00:00Z'
+      }
+    ];
+    setAvailableUsers(mockUsers);
+  }, []);
+
   useEffect(() => {
     if (company) {
       setFormData(company);
@@ -46,6 +76,8 @@ const CompanyForm: React.FC<CompanyFormProps> = ({ company, onSubmit, onCancel }
   const handleChange = (field: keyof Company, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
+
+  const canAssignUsers = user?.role === 'Admin' || user?.role === 'Manager';
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -136,6 +168,25 @@ const CompanyForm: React.FC<CompanyFormProps> = ({ company, onSubmit, onCancel }
             onChange={(e) => handleChange('hr2Details', e.target.value)}
           />
         </div>
+
+        {canAssignUsers && (
+          <div className="space-y-2">
+            <Label htmlFor="assignedOfficer">Assign Officer/Manager</Label>
+            <Select value={formData.assignedOfficer} onValueChange={(value) => handleChange('assignedOfficer', value)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select user to assign" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">Unassigned</SelectItem>
+                {availableUsers.map((user) => (
+                  <SelectItem key={user.id} value={user.username}>
+                    {user.username} ({user.role})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
 
         <div className="space-y-2 md:col-span-2">
           <Label htmlFor="remarks">Remarks</Label>

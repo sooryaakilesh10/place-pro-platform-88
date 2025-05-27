@@ -35,7 +35,7 @@ const Companies: React.FC = () => {
         hr1Details: 'John Doe - 555-0101',
         hr2Details: 'Jane Smith - 555-0102',
         package: '12 LPA',
-        assignedOfficer: 'officer',
+        assignedOfficer: 'officer1',
         createdAt: '2024-01-15T10:30:00Z',
         updatedAt: '2024-01-20T14:45:00Z'
       },
@@ -52,7 +52,7 @@ const Companies: React.FC = () => {
         hr1Details: 'Mike Johnson - 555-0201',
         hr2Details: 'Sarah Wilson - 555-0202',
         package: '15 LPA',
-        assignedOfficer: '',
+        assignedOfficer: 'manager1',
         createdAt: '2024-01-10T09:15:00Z',
         updatedAt: '2024-01-18T16:20:00Z'
       }

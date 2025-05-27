@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Trash, Settings } from 'lucide-react';
+import { Trash, Settings, User } from 'lucide-react';
 
 interface CompanyTableProps {
   companies: Company[];
@@ -18,6 +18,24 @@ const CompanyTable: React.FC<CompanyTableProps> = ({ companies, onEdit, onDelete
   const canDelete = user?.role === 'Admin' || user?.role === 'Manager';
   const canEdit = true; // All roles can edit
 
+  const getAssignedUserDisplay = (assignedOfficer: string) => {
+    if (!assignedOfficer) {
+      return (
+        <div className="flex items-center text-gray-500">
+          <User className="h-4 w-4 mr-1" />
+          Unassigned
+        </div>
+      );
+    }
+    
+    return (
+      <div className="flex items-center">
+        <User className="h-4 w-4 mr-1 text-blue-600" />
+        <Badge variant="outline">{assignedOfficer}</Badge>
+      </div>
+    );
+  };
+
   return (
     <div className="border rounded-lg overflow-hidden">
       <Table>
@@ -28,7 +46,7 @@ const CompanyTable: React.FC<CompanyTableProps> = ({ companies, onEdit, onDelete
             <TableHead>Drive Type</TableHead>
             <TableHead>Package</TableHead>
             <TableHead>Contacted</TableHead>
-            <TableHead>Assigned Officer</TableHead>
+            <TableHead>Assigned To</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -44,7 +62,9 @@ const CompanyTable: React.FC<CompanyTableProps> = ({ companies, onEdit, onDelete
                   {company.isContacted ? "Yes" : "No"}
                 </Badge>
               </TableCell>
-              <TableCell>{company.assignedOfficer || "Unassigned"}</TableCell>
+              <TableCell>
+                {getAssignedUserDisplay(company.assignedOfficer || "")}
+              </TableCell>
               <TableCell>
                 <div className="flex space-x-2">
                   {canEdit && (
