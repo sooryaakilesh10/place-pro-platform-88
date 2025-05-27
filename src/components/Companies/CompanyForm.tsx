@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Company, User } from '@/types';
 import { useAuth } from '@/contexts/AuthContext';
@@ -72,7 +71,12 @@ const CompanyForm: React.FC<CompanyFormProps> = ({ company, onSubmit, onCancel }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(formData);
+    // Convert "unassigned" back to empty string for data consistency
+    const submitData = {
+      ...formData,
+      assignedOfficer: formData.assignedOfficer === 'unassigned' ? '' : formData.assignedOfficer
+    };
+    onSubmit(submitData);
   };
 
   const handleChange = (field: keyof Company, value: any) => {
@@ -83,6 +87,13 @@ const CompanyForm: React.FC<CompanyFormProps> = ({ company, onSubmit, onCancel }
 
   const getSelectedUser = () => {
     return availableUsers.find(u => u.username === formData.assignedOfficer);
+  };
+
+  const getDisplayValue = () => {
+    if (!formData.assignedOfficer || formData.assignedOfficer === 'unassigned') {
+      return 'unassigned';
+    }
+    return formData.assignedOfficer;
   };
 
   return (
@@ -185,10 +196,10 @@ const CompanyForm: React.FC<CompanyFormProps> = ({ company, onSubmit, onCancel }
                 <Label className="text-base font-semibold text-blue-900">Assign Officer/Manager</Label>
               </div>
               
-              <Select value={formData.assignedOfficer} onValueChange={(value) => handleChange('assignedOfficer', value)}>
+              <Select value={getDisplayValue()} onValueChange={(value) => handleChange('assignedOfficer', value)}>
                 <SelectTrigger className="bg-white/80 backdrop-blur-sm border-blue-200/50 hover:bg-white/90 transition-all duration-200">
                   <SelectValue placeholder="Select user to assign">
-                    {formData.assignedOfficer && (
+                    {formData.assignedOfficer && formData.assignedOfficer !== 'unassigned' && (
                       <div className="flex items-center space-x-2">
                         <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
                           <UserIcon className="h-3 w-3 text-blue-600" />
@@ -202,7 +213,7 @@ const CompanyForm: React.FC<CompanyFormProps> = ({ company, onSubmit, onCancel }
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent className="bg-white/95 backdrop-blur-md border-blue-200/50">
-                  <SelectItem value="" className="hover:bg-blue-50/50">
+                  <SelectItem value="unassigned" className="hover:bg-blue-50/50">
                     <div className="flex items-center space-x-2">
                       <div className="w-6 h-6 bg-gray-100 rounded-full flex items-center justify-center">
                         <UserIcon className="h-3 w-3 text-gray-400" />
@@ -226,7 +237,7 @@ const CompanyForm: React.FC<CompanyFormProps> = ({ company, onSubmit, onCancel }
                 </SelectContent>
               </Select>
 
-              {formData.assignedOfficer && (
+              {formData.assignedOfficer && formData.assignedOfficer !== 'unassigned' && (
                 <div className="mt-3 p-3 bg-white/60 backdrop-blur-sm rounded-md border border-blue-200/30">
                   <div className="flex items-center space-x-2">
                     <div className="w-8 h-8 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-full flex items-center justify-center">
