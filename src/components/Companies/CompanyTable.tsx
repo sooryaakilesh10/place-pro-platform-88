@@ -22,9 +22,9 @@ const CompanyTable: React.FC<CompanyTableProps> = ({ companies, onEdit, onDelete
     if (!assignedOfficer) {
       return (
         <div className="flex items-center justify-center">
-          <div className="flex items-center px-3 py-2 bg-gray-50/80 backdrop-blur-sm border border-gray-200/50 rounded-full text-gray-500 text-sm">
-            <div className="w-6 h-6 bg-gray-100 rounded-full flex items-center justify-center mr-2">
-              <User className="h-3 w-3 text-gray-400" />
+          <div className="flex items-center px-2 py-1 bg-gray-50/80 backdrop-blur-sm border border-gray-200/50 rounded-full text-gray-500 text-xs">
+            <div className="w-4 h-4 bg-gray-100 rounded-full flex items-center justify-center mr-1">
+              <User className="h-2 w-2 text-gray-400" />
             </div>
             <span className="font-medium">Unassigned</span>
           </div>
@@ -34,11 +34,11 @@ const CompanyTable: React.FC<CompanyTableProps> = ({ companies, onEdit, onDelete
     
     return (
       <div className="flex items-center justify-center">
-        <div className="flex items-center px-3 py-2 bg-gradient-to-r from-blue-50/80 to-indigo-50/80 backdrop-blur-sm border border-blue-200/50 rounded-full shadow-sm hover:shadow-md transition-all duration-200">
-          <div className="w-6 h-6 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-full flex items-center justify-center mr-2">
-            <User className="h-3 w-3 text-blue-600" />
+        <div className="flex items-center px-2 py-1 bg-gradient-to-r from-blue-50/80 to-indigo-50/80 backdrop-blur-sm border border-blue-200/50 rounded-full shadow-sm hover:shadow-md transition-all duration-200">
+          <div className="w-4 h-4 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-full flex items-center justify-center mr-1">
+            <User className="h-2 w-2 text-blue-600" />
           </div>
-          <Badge variant="outline" className="bg-white/80 text-blue-700 border-blue-200/50 font-medium">
+          <Badge variant="outline" className="bg-white/80 text-blue-700 border-blue-200/50 font-medium text-xs">
             {assignedOfficer}
           </Badge>
         </div>
@@ -46,63 +46,110 @@ const CompanyTable: React.FC<CompanyTableProps> = ({ companies, onEdit, onDelete
     );
   };
 
+  const truncateText = (text: string, maxLength: number = 30) => {
+    if (!text) return '-';
+    return text.length > maxLength ? `${text.substring(0, maxLength)}...` : text;
+  };
+
   return (
     <div className="border rounded-lg overflow-hidden bg-white/50 backdrop-blur-sm shadow-lg">
-      <Table>
-        <TableHeader>
-          <TableRow className="bg-gradient-to-r from-gray-50/80 to-blue-50/80 backdrop-blur-sm border-b border-gray-200/50">
-            <TableHead className="font-semibold text-gray-700">Company Name</TableHead>
-            <TableHead className="font-semibold text-gray-700">Address</TableHead>
-            <TableHead className="font-semibold text-gray-700">Drive Type</TableHead>
-            <TableHead className="font-semibold text-gray-700">Package</TableHead>
-            <TableHead className="font-semibold text-gray-700">Contacted</TableHead>
-            <TableHead className="font-semibold text-gray-700 text-center">Assigned To</TableHead>
-            <TableHead className="font-semibold text-gray-700">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {companies.map((company) => (
-            <TableRow key={company.companyID} className="hover:bg-white/80 backdrop-blur-sm transition-all duration-200 border-b border-gray-100/50">
-              <TableCell className="font-medium">{company.companyName}</TableCell>
-              <TableCell className="max-w-xs truncate">{company.companyAddress}</TableCell>
-              <TableCell>{company.typeOfDrive}</TableCell>
-              <TableCell>{company.package}</TableCell>
-              <TableCell>
-                <Badge variant={company.isContacted ? "default" : "secondary"} className="bg-opacity-80 backdrop-blur-sm">
-                  {company.isContacted ? "Yes" : "No"}
-                </Badge>
-              </TableCell>
-              <TableCell>
-                {getAssignedUserDisplay(company.assignedOfficer || "")}
-              </TableCell>
-              <TableCell>
-                <div className="flex space-x-2">
-                  {canEdit && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => onEdit(company)}
-                      className="bg-white/80 backdrop-blur-sm border-gray-200/50 hover:bg-blue-50/80 hover:border-blue-200/50 transition-all duration-200"
-                    >
-                      <Settings className="h-4 w-4" />
-                    </Button>
-                  )}
-                  {canDelete && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => onDelete(company.companyID)}
-                      className="bg-white/80 backdrop-blur-sm border-gray-200/50 hover:bg-red-50/80 hover:border-red-200/50 transition-all duration-200"
-                    >
-                      <Trash className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
-              </TableCell>
+      <div className="overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-gradient-to-r from-gray-50/80 to-blue-50/80 backdrop-blur-sm border-b border-gray-200/50">
+              <TableHead className="font-semibold text-gray-700 min-w-[150px]">Company Name</TableHead>
+              <TableHead className="font-semibold text-gray-700 min-w-[200px]">Address</TableHead>
+              <TableHead className="font-semibold text-gray-700 min-w-[120px]">Drive</TableHead>
+              <TableHead className="font-semibold text-gray-700 min-w-[100px]">Type</TableHead>
+              <TableHead className="font-semibold text-gray-700 min-w-[120px]">Follow Up</TableHead>
+              <TableHead className="font-semibold text-gray-700 min-w-[80px]">Contacted</TableHead>
+              <TableHead className="font-semibold text-gray-700 min-w-[150px]">Contact Details</TableHead>
+              <TableHead className="font-semibold text-gray-700 min-w-[120px]">HR1 Details</TableHead>
+              <TableHead className="font-semibold text-gray-700 min-w-[120px]">HR2 Details</TableHead>
+              <TableHead className="font-semibold text-gray-700 min-w-[100px]">Package</TableHead>
+              <TableHead className="font-semibold text-gray-700 min-w-[150px]">Remarks</TableHead>
+              <TableHead className="font-semibold text-gray-700 text-center min-w-[120px]">Assigned To</TableHead>
+              <TableHead className="font-semibold text-gray-700 min-w-[100px]">Actions</TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          <TableBody>
+            {companies.map((company) => (
+              <TableRow key={company.companyID} className="hover:bg-white/80 backdrop-blur-sm transition-all duration-200 border-b border-gray-100/50">
+                <TableCell className="font-medium">{company.companyName}</TableCell>
+                <TableCell className="max-w-xs">
+                  <div title={company.companyAddress} className="truncate">
+                    {truncateText(company.companyAddress, 40)}
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div title={company.drive} className="truncate">
+                    {truncateText(company.drive, 20)}
+                  </div>
+                </TableCell>
+                <TableCell>{company.typeOfDrive || '-'}</TableCell>
+                <TableCell>
+                  <div title={company.followUp} className="truncate">
+                    {truncateText(company.followUp, 20)}
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <Badge variant={company.isContacted ? "default" : "secondary"} className="bg-opacity-80 backdrop-blur-sm">
+                    {company.isContacted ? "Yes" : "No"}
+                  </Badge>
+                </TableCell>
+                <TableCell>
+                  <div title={company.contactDetails} className="truncate">
+                    {truncateText(company.contactDetails, 25)}
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div title={company.hr1Details} className="truncate">
+                    {truncateText(company.hr1Details, 20)}
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div title={company.hr2Details} className="truncate">
+                    {truncateText(company.hr2Details, 20)}
+                  </div>
+                </TableCell>
+                <TableCell>{company.package || '-'}</TableCell>
+                <TableCell>
+                  <div title={company.remarks} className="truncate">
+                    {truncateText(company.remarks, 25)}
+                  </div>
+                </TableCell>
+                <TableCell>
+                  {getAssignedUserDisplay(company.assignedOfficer || "")}
+                </TableCell>
+                <TableCell>
+                  <div className="flex space-x-2">
+                    {canEdit && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => onEdit(company)}
+                        className="bg-white/80 backdrop-blur-sm border-gray-200/50 hover:bg-blue-50/80 hover:border-blue-200/50 transition-all duration-200"
+                      >
+                        <Settings className="h-4 w-4" />
+                      </Button>
+                    )}
+                    {canDelete && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => onDelete(company.companyID)}
+                        className="bg-white/80 backdrop-blur-sm border-gray-200/50 hover:bg-red-50/80 hover:border-red-200/50 transition-all duration-200"
+                      >
+                        <Trash className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 };
