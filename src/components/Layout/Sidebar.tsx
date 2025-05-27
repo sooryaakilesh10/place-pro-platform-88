@@ -8,7 +8,8 @@ import {
   Calendar, 
   Settings, 
   File,
-  Check
+  Check,
+  Building2
 } from 'lucide-react';
 
 const Sidebar: React.FC = () => {
@@ -18,12 +19,18 @@ const Sidebar: React.FC = () => {
     {
       name: 'Dashboard',
       path: '/dashboard',
-      icon: Calendar,
+      icon: Settings,
       roles: ['Admin', 'Manager', 'Officer']
     },
     {
       name: 'Companies',
       path: '/companies',
+      icon: Building2,
+      roles: ['Admin', 'Manager', 'Officer']
+    },
+    {
+      name: 'Calendar',
+      path: '/calendar',
       icon: Calendar,
       roles: ['Admin', 'Manager', 'Officer']
     },
