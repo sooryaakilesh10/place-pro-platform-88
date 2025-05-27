@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, AuthContextType } from '@/types';
 
@@ -42,15 +41,39 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const login = async (username: string, password: string): Promise<boolean> => {
-    // Mock authentication - in real app, this would call an API
-    const foundUser = mockUsers.find(u => u.username === username);
-    if (foundUser && password === 'password') {
-      setUser(foundUser);
+    try {
+      const response = await fetch('http://localhost:8080/user/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ username, password }),
+      });
+
+      if (!response.ok) {
+        return false;
+      }
+
+      const userData = await response.json();
+      
+      // Create user object from response
+      const user: User = {
+        id: userData.id,
+        username: userData.username,
+        email: userData.email,
+        role: userData.role,
+        createdAt: userData.createdAt
+      };
+
+      setUser(user);
       setIsAuthenticated(true);
-      localStorage.setItem('user', JSON.stringify(foundUser));
+      localStorage.setItem('user', JSON.stringify(user));
       return true;
+    } catch (error) {
+      console.error('Login error:', error);
+      return false;
     }
-    return false;
   };
 
   const logout = () => {
