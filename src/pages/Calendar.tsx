@@ -1,9 +1,8 @@
-
 import React, { useState, useEffect } from 'react';
 import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -39,28 +38,34 @@ const CalendarPage: React.FC = () => {
   const canManageEvents = user?.role === 'Admin' || user?.role === 'Manager';
 
   useEffect(() => {
-    // Mock events data - in real app, fetch from API
-    const mockEvents: CalendarEvent[] = [
-      {
-        id: '1',
-        date: new Date(2024, 5, 15),
-        type: 'notification',
-        title: 'Company Visit Reminder',
-        description: 'Visit Tech Solutions Inc for follow-up',
-        createdBy: 'admin',
-        createdAt: new Date().toISOString()
-      },
-      {
-        id: '2',
-        date: new Date(2024, 5, 20),
-        type: 'target',
-        title: 'Monthly Target Review',
-        description: 'Review monthly placement targets and progress',
-        createdBy: 'manager1',
-        createdAt: new Date().toISOString()
+    const fetchEvents = async () => {
+      try {
+        const response = await fetch('http://localhost:8080/event/list');
+        if (!response.ok) {
+          throw new Error('Failed to fetch events');
+        }
+        const data = await response.json();
+        const formattedEvents: CalendarEvent[] = data.map((event: any) => ({
+          id: event.id,
+          date: new Date(event.date),
+          type: event.type,
+          title: event.title,
+          description: event.description,
+          createdBy: event.created_by,
+          createdAt: event.created_at
+        }));
+        setEvents(formattedEvents);
+      } catch (error) {
+        console.error('Error fetching events:', error);
+        toast({
+          title: "Error",
+          description: "Failed to fetch calendar events",
+          variant: "destructive"
+        });
       }
-    ];
-    setEvents(mockEvents);
+    };
+
+    fetchEvents();
   }, []);
 
   const getEventsForDate = (date: Date) => {
@@ -69,7 +74,7 @@ const CalendarPage: React.FC = () => {
     );
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedDate || !formData.title.trim()) return;
 
@@ -91,21 +96,49 @@ const CalendarPage: React.FC = () => {
         description: "Calendar event has been updated successfully.",
       });
     } else {
-      // Create new event
-      const newEvent: CalendarEvent = {
-        id: Math.random().toString(36).substr(2, 9),
-        date: selectedDate,
-        type: formData.type,
-        title: formData.title,
-        description: formData.description,
-        createdBy: user?.username || '',
-        createdAt: new Date().toISOString()
-      };
-      setEvents(prev => [...prev, newEvent]);
-      toast({
-        title: "Event Created",
-        description: "New calendar event has been added successfully.",
-      });
+      try {
+        // Create new event via API
+        const response = await fetch('http://localhost:8080/event/create', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            date: selectedDate.toISOString(),
+            type: formData.type,
+            title: formData.title,
+            description: formData.description,
+            created_by: user?.username || ''
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to create event');
+        }
+
+        const newEvent = await response.json();
+        setEvents(prev => [...prev, {
+          id: newEvent.id,
+          date: new Date(newEvent.date),
+          type: newEvent.type,
+          title: newEvent.title,
+          description: newEvent.description,
+          createdBy: newEvent.created_by,
+          createdAt: newEvent.created_at
+        }]);
+
+        toast({
+          title: "Event Created",
+          description: "New calendar event has been added successfully.",
+        });
+      } catch (error) {
+        console.error('Error creating event:', error);
+        toast({
+          title: "Error",
+          description: "Failed to create calendar event",
+          variant: "destructive"
+        });
+      }
     }
 
     // Reset form
@@ -162,6 +195,9 @@ const CalendarPage: React.FC = () => {
                 <DialogTitle>
                   {editingEvent ? 'Edit Event' : 'Add New Event'}
                 </DialogTitle>
+                <DialogDescription>
+                  {editingEvent ? 'Update the event details below.' : 'Fill in the details to create a new event.'}
+                </DialogDescription>
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">

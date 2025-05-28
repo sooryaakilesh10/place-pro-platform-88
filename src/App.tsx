@@ -7,7 +7,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import Layout from "@/components/Layout/Layout";
 import LoginPage from "@/components/Auth/LoginPage";
-import Dashboard from "@/pages/Dashboard";
+// import Dashboard from "@/pages/Dashboard";
 import Companies from "@/pages/Companies";
 import Users from "@/pages/Users";
 import Approvals from "@/pages/Approvals";
@@ -29,7 +29,7 @@ const AppRoutes = () => {
     <Layout>
       <Routes>
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
-        <Route path="/dashboard" element={<Dashboard />} />
+        {/* <Route path="/dashboard" element={<Dashboard />} /> */}
         <Route path="/companies" element={<Companies />} />
         <Route path="/calendar" element={<Calendar />} />
         <Route 

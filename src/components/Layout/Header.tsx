@@ -24,10 +24,10 @@ const Header: React.FC = () => {
             </div>
           </div>
           
-          <Button variant="outline" size="sm">
+          {/* <Button variant="outline" size="sm">
             <Settings className="h-4 w-4 mr-2" />
             Settings
-          </Button>
+          </Button> */}
           
           <Button onClick={logout} variant="destructive" size="sm">
             Logout

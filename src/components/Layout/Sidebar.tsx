@@ -16,12 +16,12 @@ const Sidebar: React.FC = () => {
   const { user } = useAuth();
 
   const navItems = [
-    {
-      name: 'Dashboard',
-      path: '/dashboard',
-      icon: Settings,
-      roles: ['Admin', 'Manager', 'Officer']
-    },
+    // {
+    //   name: 'Dashboard',
+    //   path: '/dashboard',
+    //   icon: Settings,
+    //   roles: ['Admin', 'Manager', 'Officer']
+    // },
     {
       name: 'Companies',
       path: '/companies',
@@ -46,12 +46,12 @@ const Sidebar: React.FC = () => {
       icon: Check,
       roles: ['Admin', 'Manager']
     },
-    {
-      name: 'Reports',
-      path: '/reports',
-      icon: File,
-      roles: ['Admin', 'Manager']
-    }
+    // {
+    //   name: 'Reports',
+    //   path: '/reports',
+    //   icon: File,
+    //   roles: ['Admin', 'Manager']
+    // }
   ];
 
   const filteredNavItems = navItems.filter(item => 
