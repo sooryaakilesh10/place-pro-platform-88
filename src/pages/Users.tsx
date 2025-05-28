@@ -82,12 +82,31 @@ const Users: React.FC = () => {
     }
   };
 
-  const handleDelete = (userId: string) => {
-    setUsers(prev => prev.filter(user => user.id !== userId));
-    toast({
-      title: "User Deleted",
-      description: "User has been removed from the system.",
-    });
+  const handleDelete = async (userId: string) => {
+    try {
+      const response = await fetch(`http://localhost:8080/user/delete/${userId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete user');
+      }
+
+      setUsers(prev => prev.filter(user => user.id !== userId));
+      toast({
+        title: "User Deleted",
+        description: "User has been removed from the system.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete user. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   if (currentUser?.role !== 'Admin') {
