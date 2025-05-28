@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, AuthContextType } from '@/types';
+import { ENDPOINTS } from '@/constants/api';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -42,10 +43,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (username: string, password: string): Promise<boolean> => {
     try {
-      const response = await fetch('http://localhost:8080/user/login', {
+      const response = await fetch(ENDPOINTS.AUTH.LOGIN, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+              'ngrok-skip-browser-warning': '1'
         },
         credentials: 'include',
         body: JSON.stringify({ username, password }),

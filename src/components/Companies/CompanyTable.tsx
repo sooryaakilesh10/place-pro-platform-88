@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ENDPOINTS } from '@/constants/api';
 
 interface CompanyTableProps {
   companies: Company[];
@@ -104,10 +105,11 @@ const CompanyTable: React.FC<CompanyTableProps> = ({ companies = [], onEdit, onD
         status: 'pending'
       };
 
-      const response = await fetch('http://localhost:8080/company/temp/update', {
+      const response = await fetch(ENDPOINTS.COMPANY.TEMP.UPDATE, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+              'ngrok-skip-browser-warning': '1'
         },
         body: JSON.stringify(updatePayload),
       });

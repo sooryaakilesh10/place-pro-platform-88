@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from '@/hooks/use-toast';
+import { ENDPOINTS } from '@/constants/api';
 
 const LoginPage: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -17,10 +18,11 @@ const LoginPage: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const response = await fetch('http://localhost:8080/user/login', {
+      const response = await fetch(ENDPOINTS.AUTH.LOGIN, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'ngrok-skip-browser-warning': '1',
         },
         credentials: 'include',
         body: JSON.stringify({

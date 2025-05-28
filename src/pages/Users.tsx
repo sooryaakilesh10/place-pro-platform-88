@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from '@/hooks/use-toast';
 import UserTable from '@/components/Users/UserTable';
 import { Plus } from 'lucide-react';
+import { ENDPOINTS } from '@/constants/api';
 
 const Users: React.FC = () => {
   const { user: currentUser } = useAuth();
@@ -24,7 +25,11 @@ const Users: React.FC = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await fetch('http://localhost:8080/user/list');
+        const response = await fetch(ENDPOINTS.USER.LIST, {
+          headers: {
+            'ngrok-skip-browser-warning': '1'
+          }
+        });
         if (!response.ok) {
           throw new Error('Failed to fetch users');
         }
@@ -46,7 +51,7 @@ const Users: React.FC = () => {
     e.preventDefault();
     
     try {
-      const response = await fetch('http://localhost:8080/user/create', {
+      const response = await fetch(ENDPOINTS.USER.CREATE, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -84,7 +89,7 @@ const Users: React.FC = () => {
 
   const handleDelete = async (userId: string) => {
     try {
-      const response = await fetch(`http://localhost:8080/user/delete/${userId}`, {
+      const response = await fetch(ENDPOINTS.USER.DELETE(userId), {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',

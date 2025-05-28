@@ -8,6 +8,8 @@ import CompanyTable from '@/components/Companies/CompanyTable';
 import CompanyForm from '@/components/Companies/CompanyForm';
 import ExcelExport from '@/components/Reports/ExcelExport';
 import { Plus } from 'lucide-react';
+import { ENDPOINTS } from '@/constants/api';
+import { apiGet, apiPost, apiPut, apiDelete } from '@/utils/api-utils';
 
 const Companies: React.FC = () => {
   const { user } = useAuth();
@@ -22,14 +24,14 @@ const Companies: React.FC = () => {
   const fetchCompanies = async () => {
     try {
       const endpoint = user?.role === 'Officer' 
-        ? `http://localhost:8080/company/list/${user.username}`
-        : 'http://localhost:8080/company/list';
+        ? ENDPOINTS.COMPANY.LIST_BY_OFFICER(user.username)
+        : ENDPOINTS.COMPANY.LIST;
       
-      const response = await fetch(endpoint);
-      if (!response.ok) {
-        throw new Error('Failed to fetch companies');
-      }
-      const data = await response.json();
+      const data = await apiGet(endpoint, {
+        headers: {
+          'ngrok-skip-browser-warning': '1'
+        }
+      });
       setCompanies(data);
     } catch (error) {
       console.error('Error fetching companies:', error);
@@ -53,32 +55,26 @@ const Companies: React.FC = () => {
         // Update existing company
         if (user?.role === 'Officer') {
           // For officers, use the temporary update endpoint
-          const response = await fetch('http://localhost:8080/company/temp/update', {
-            method: 'POST',
+          await apiPost(ENDPOINTS.COMPANY.TEMP.UPDATE, {
+            company_id: selectedCompany.id,
+            company_name: formData.companyName,
+            company_address: formData.companyAddress,
+            drive: formData.drive,
+            type_of_drive: formData.typeOfDrive,
+            follow_up: formData.followUp,
+            is_contacted: formData.isContacted,
+            remarks: formData.remarks,
+            contact_details: formData.contactDetails,
+            hr1_details: formData.hr1Details,
+            hr2_details: formData.hr2Details,
+            package: formData.package,
+            assigned_officer: selectedCompany.assignedOfficer,
+            created_by: user.username
+          }, {
             headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              company_id: selectedCompany.id,
-              company_name: formData.companyName,
-              company_address: formData.companyAddress,
-              drive: formData.drive,
-              type_of_drive: formData.typeOfDrive,
-              follow_up: formData.followUp,
-              is_contacted: formData.isContacted,
-              remarks: formData.remarks,
-              contact_details: formData.contactDetails,
-              hr1_details: formData.hr1Details,
-              hr2_details: formData.hr2Details,
-              package: formData.package,
-              assigned_officer: selectedCompany.assignedOfficer,
-              created_by: user.username
-            }),
+              'ngrok-skip-browser-warning': '1'
+            }
           });
-
-          if (!response.ok) {
-            throw new Error('Failed to submit update request');
-          }
 
           toast({
             title: "Update Submitted",
@@ -90,17 +86,11 @@ const Companies: React.FC = () => {
           return;
         }
         
-        const response = await fetch(`http://localhost:8080/company/update/${selectedCompany.id}`, {
-          method: 'PUT',
+        await apiPut(ENDPOINTS.COMPANY.UPDATE(selectedCompany.id), formData, {
           headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(formData),
+            'ngrok-skip-browser-warning': '1'
+          }
         });
-
-        if (!response.ok) {
-          throw new Error('Failed to update company');
-        }
 
         toast({
           title: "Company Updated",
@@ -108,17 +98,11 @@ const Companies: React.FC = () => {
         });
       } else {
         // Create new company
-        const response = await fetch('http://localhost:8080/company/create', {
-          method: 'POST',
+        await apiPost(ENDPOINTS.COMPANY.CREATE, formData, {
           headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(formData),
+            'ngrok-skip-browser-warning': '1'
+          }
         });
-
-        if (!response.ok) {
-          throw new Error('Failed to create company');
-        }
 
         toast({
           title: "Company Created",
@@ -147,13 +131,11 @@ const Companies: React.FC = () => {
 
   const handleDelete = async (companyId: string) => {
     try {
-      const response = await fetch(`http://localhost:8080/company/delete/${companyId}`, {
-        method: 'DELETE',
+      await apiDelete(ENDPOINTS.COMPANY.DELETE(companyId), {
+        headers: {
+          'ngrok-skip-browser-warning': '1'
+        }
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to delete company');
-      }
 
       await fetchCompanies();
       toast({

@@ -12,6 +12,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import { CalendarPlus, Bell, Target, Trash, Edit } from 'lucide-react';
 import { format } from 'date-fns';
+import { ENDPOINTS } from '@/constants/api';
 
 interface CalendarEvent {
   id: string;
@@ -40,7 +41,11 @@ const CalendarPage: React.FC = () => {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const response = await fetch('http://localhost:8080/event/list');
+        const response = await fetch(ENDPOINTS.EVENT.LIST, {
+          headers: {
+            'ngrok-skip-browser-warning': '1'
+          }
+        });
         if (!response.ok) {
           throw new Error('Failed to fetch events');
         }
@@ -79,29 +84,65 @@ const CalendarPage: React.FC = () => {
     if (!selectedDate || !formData.title.trim()) return;
 
     if (editingEvent) {
-      // Update existing event
-      setEvents(prev => prev.map(event => 
-        event.id === editingEvent.id 
-          ? { 
-              ...event, 
-              ...formData, 
-              date: selectedDate,
-              title: formData.title,
-              description: formData.description 
-            }
-          : event
-      ));
-      toast({
-        title: "Event Updated",
-        description: "Calendar event has been updated successfully.",
-      });
+      try {
+        // Update existing event
+        const response = await fetch(ENDPOINTS.EVENT.UPDATE(editingEvent.id), {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            
+                'ngrok-skip-browser-warning': '1'  
+          },
+          body: JSON.stringify({
+            date: selectedDate.toISOString(),
+            type: formData.type,
+            title: formData.title,
+            description: formData.description,
+            created_by: user?.username || ''
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to update event');
+        }
+
+        const updatedEvent = await response.json();
+        setEvents(prev => prev.map(event => 
+          event.id === editingEvent.id 
+            ? {
+                id: updatedEvent.id,
+                date: new Date(updatedEvent.date),
+                type: updatedEvent.type,
+                title: updatedEvent.title,
+                description: updatedEvent.description,
+                createdBy: updatedEvent.created_by,
+                createdAt: updatedEvent.created_at
+              }
+            : event
+        ));
+
+        toast({
+          title: "Event Updated",
+          description: "Calendar event has been updated successfully.",
+        });
+      } catch (error) {
+        console.error('Error updating event:', error);
+        toast({
+          title: "Error",
+          description: "Failed to update calendar event",
+          variant: "destructive"
+        });
+      }
     } else {
       try {
         // Create new event via API
-        const response = await fetch('http://localhost:8080/event/create', {
+        const response = await fetch(ENDPOINTS.EVENT.CREATE, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            
+                'ngrok-skip-browser-warning': '1'
+              
           },
           body: JSON.stringify({
             date: selectedDate.toISOString(),
@@ -158,12 +199,34 @@ const CalendarPage: React.FC = () => {
     setIsEventDialogOpen(true);
   };
 
-  const handleDelete = (eventId: string) => {
-    setEvents(prev => prev.filter(event => event.id !== eventId));
-    toast({
-      title: "Event Deleted",
-      description: "Calendar event has been removed.",
-    });
+  const handleDelete = async (eventId: string) => {
+    try {
+      const response = await fetch(ENDPOINTS.EVENT.DELETE(eventId), {
+        method: 'DELETE',
+       
+          headers: {
+            'ngrok-skip-browser-warning': '1'
+          }
+        
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete event');
+      }
+
+      setEvents(prev => prev.filter(event => event.id !== eventId));
+      toast({
+        title: "Event Deleted",
+        description: "Calendar event has been removed.",
+      });
+    } catch (error) {
+      console.error('Error deleting event:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete calendar event",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleCreateNew = () => {

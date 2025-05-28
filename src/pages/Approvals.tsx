@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { toast } from '@/hooks/use-toast';
 import { Check, Trash } from 'lucide-react';
+import { ENDPOINTS } from '@/constants/api';
 
 const Approvals: React.FC = () => {
   const { user } = useAuth();
@@ -15,7 +16,11 @@ const Approvals: React.FC = () => {
   useEffect(() => {
     const fetchPendingUpdates = async () => {
       try {
-        const response = await fetch('http://localhost:8080/company/temp/list');
+        const response = await fetch(ENDPOINTS.COMPANY.TEMP.LIST, {
+          headers: {
+            'ngrok-skip-browser-warning': '1'
+          }
+        });
         if (!response.ok) {
           throw new Error('Failed to fetch pending updates');
         }
@@ -79,10 +84,12 @@ const Approvals: React.FC = () => {
 
   const handleApprove = async (updateId: string) => {
     try {
-      const response = await fetch(`http://localhost:8080/company/temp/approve/${updateId}`, {
+      const response = await fetch(ENDPOINTS.COMPANY.TEMP.APPROVE(updateId), {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
+          
+              'ngrok-skip-browser-warning': '1'
         }
       });
 

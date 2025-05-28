@@ -9,6 +9,7 @@ import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { User as UserIcon, Users } from 'lucide-react';
+import { ENDPOINTS } from '@/constants/api';
 
 interface CompanyFormProps {
   company?: Company | null;
@@ -39,7 +40,11 @@ const CompanyForm: React.FC<CompanyFormProps> = ({ company, onSubmit, onCancel }
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await fetch('http://localhost:8080/user/list');
+        const response = await fetch(ENDPOINTS.USER.LIST, {
+          headers: {
+            'ngrok-skip-browser-warning': '1'
+          }
+        });
         if (!response.ok) {
           throw new Error('Failed to fetch users');
         }
