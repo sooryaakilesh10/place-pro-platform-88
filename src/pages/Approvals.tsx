@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { PendingUpdate } from '@/types';
 import { useAuth } from '@/contexts/AuthContext';
@@ -14,86 +13,98 @@ const Approvals: React.FC = () => {
   const [pendingUpdates, setPendingUpdates] = useState<PendingUpdate[]>([]);
 
   useEffect(() => {
-    // Mock data - in real app, fetch from API
-    const mockPendingUpdates: PendingUpdate[] = [
-      {
-        id: '1',
-        companyID: '1',
-        originalData: {
-          companyID: '1',
-          companyName: 'Tech Solutions Inc',
-          companyAddress: '123 Tech Street, Silicon Valley, CA',
-          drive: 'Campus Drive 2024',
-          typeOfDrive: 'On-Campus',
-          followUp: 'Follow up next week',
-          isContacted: true,
-          remarks: 'Interested in CS students',
-          contactDetails: 'hr@techsolutions.com',
-          hr1Details: 'John Doe - 555-0101',
-          hr2Details: 'Jane Smith - 555-0102',
-          package: '12 LPA',
-          assignedOfficer: 'officer',
-          createdAt: '2024-01-15T10:30:00Z',
-          updatedAt: '2024-01-20T14:45:00Z'
-        },
-        proposedChanges: {
-          package: '15 LPA',
-          remarks: 'Interested in CS students. Updated package information.',
-          contactDetails: 'hr@techsolutions.com, recruiter@techsolutions.com'
-        },
-        requestedBy: 'officer',
-        requestedAt: '2024-01-25T09:30:00Z',
-        status: 'pending'
-      },
-      {
-        id: '2',
-        companyID: '2',
-        originalData: {
-          companyID: '2',
-          companyName: 'Digital Innovations Ltd',
-          companyAddress: '456 Innovation Drive, Austin, TX',
-          drive: 'Virtual Drive 2024',
-          typeOfDrive: 'Virtual',
-          followUp: 'Awaiting response',
-          isContacted: false,
-          remarks: 'Looking for software engineers',
-          contactDetails: 'careers@digitalinnovations.com',
-          hr1Details: 'Mike Johnson - 555-0201',
-          hr2Details: 'Sarah Wilson - 555-0202',
-          package: '15 LPA',
-          assignedOfficer: '',
-          createdAt: '2024-01-10T09:15:00Z',
-          updatedAt: '2024-01-18T16:20:00Z'
-        },
-        proposedChanges: {
-          isContacted: true,
-          followUp: 'Scheduled interview for next week',
-          remarks: 'Looking for software engineers. Initial contact made.'
-        },
-        requestedBy: 'officer',
-        requestedAt: '2024-01-24T14:15:00Z',
-        status: 'pending'
+    const fetchPendingUpdates = async () => {
+      try {
+        const response = await fetch('http://localhost:8080/company/temp/list');
+        if (!response.ok) {
+          throw new Error('Failed to fetch pending updates');
+        }
+        const data = await response.json();
+        
+        // Transform the API response into PendingUpdate format
+        const transformedUpdates: PendingUpdate[] = data.map((item: any) => ({
+          id: item.id,
+          companyID: item.id,
+          originalData: {
+            companyID: item.id,
+            companyName: item.companyName,
+            companyAddress: item.companyAddress,
+            drive: item.drive,
+            typeOfDrive: item.typeOfDrive,
+            followUp: item.followUp,
+            isContacted: item.isContacted,
+            remarks: item.remarks,
+            contactDetails: item.contactDetails,
+            hr1Details: item.hr1Details,
+            hr2Details: item.hr2Details,
+            package: item.package,
+            assignedOfficer: item.assignedOfficer,
+            createdAt: item.createdAt,
+            updatedAt: item.updatedAt
+          },
+          proposedChanges: {
+            // Since the API doesn't provide proposed changes directly,
+            // we'll use the current data as proposed changes
+            companyName: item.companyName,
+            companyAddress: item.companyAddress,
+            drive: item.drive,
+            typeOfDrive: item.typeOfDrive,
+            followUp: item.followUp,
+            isContacted: item.isContacted,
+            remarks: item.remarks,
+            contactDetails: item.contactDetails,
+            hr1Details: item.hr1Details,
+            hr2Details: item.hr2Details,
+            package: item.package,
+            assignedOfficer: item.assignedOfficer
+          },
+          requestedBy: item.assignedOfficer?.[0] || 'Unknown',
+          requestedAt: item.createdAt,
+          status: 'pending'
+        }));
+
+        setPendingUpdates(transformedUpdates);
+      } catch (error) {
+        console.error('Error fetching pending updates:', error);
+        toast({
+          title: "Error",
+          description: "Failed to fetch pending updates. Please try again later.",
+          variant: "destructive",
+        });
       }
-    ];
-    setPendingUpdates(mockPendingUpdates);
+    };
+
+    fetchPendingUpdates();
   }, []);
 
-  const handleApprove = (updateId: string) => {
-    setPendingUpdates(prev => prev.map(update => 
-      update.id === updateId 
-        ? { 
-            ...update, 
-            status: 'approved', 
-            reviewedBy: user?.username,
-            reviewedAt: new Date().toISOString()
-          }
-        : update
-    ));
-    
-    toast({
-      title: "Update Approved",
-      description: "The company update has been approved and applied.",
-    });
+  const handleApprove = async (updateId: string) => {
+    try {
+      const response = await fetch(`http://localhost:8080/company/temp/approve/${updateId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to approve update');
+      }
+
+      // Remove the approved update from the list
+      setPendingUpdates(prev => prev.filter(update => update.id !== updateId));
+      
+      toast({
+        title: "Update Approved",
+        description: "The company update has been approved and applied.",
+      });
+    } catch (error) {
+      console.error('Error approving update:', error);
+      toast({
+        title: "Error",
+        description: "Failed to approve update. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleReject = (updateId: string) => {

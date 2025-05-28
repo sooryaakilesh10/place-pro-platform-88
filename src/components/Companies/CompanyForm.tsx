@@ -34,6 +34,7 @@ const CompanyForm: React.FC<CompanyFormProps> = ({ company, onSubmit, onCancel }
   });
 
   const [availableUsers, setAvailableUsers] = useState<User[]>([]);
+  const isOfficer = user?.role === 'Officer';
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -46,13 +47,14 @@ const CompanyForm: React.FC<CompanyFormProps> = ({ company, onSubmit, onCancel }
         setAvailableUsers(data);
       } catch (error) {
         console.error('Error fetching users:', error);
-        // Optionally set an empty array or show error state
         setAvailableUsers([]);
       }
     };
 
-    fetchUsers();
-  }, []);
+    if (!isOfficer) {
+      fetchUsers();
+    }
+  }, [isOfficer]);
 
   useEffect(() => {
     if (company) {
@@ -62,7 +64,6 @@ const CompanyForm: React.FC<CompanyFormProps> = ({ company, onSubmit, onCancel }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Convert assignedOfficer to array if it's a string
     const submitData = {
       ...formData,
       assignedOfficer: Array.isArray(formData.assignedOfficer) 
@@ -91,6 +92,13 @@ const CompanyForm: React.FC<CompanyFormProps> = ({ company, onSubmit, onCancel }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {isOfficer && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+          <p className="text-sm text-blue-700">
+            As an officer, your changes will be submitted for approval. Only admins and managers can approve your updates.
+          </p>
+        </div>
+      )}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="companyName">Company Name *</Label>
@@ -274,7 +282,7 @@ const CompanyForm: React.FC<CompanyFormProps> = ({ company, onSubmit, onCancel }
           Cancel
         </Button>
         <Button type="submit">
-          {company ? 'Update Company' : 'Create Company'}
+          {company ? (isOfficer ? 'Submit Update for Approval' : 'Update Company') : 'Create Company'}
         </Button>
       </div>
     </form>

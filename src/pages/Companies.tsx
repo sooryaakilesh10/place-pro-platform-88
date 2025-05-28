@@ -59,8 +59,20 @@ const Companies: React.FC = () => {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              ...formData,
-              companyId: selectedCompany.id
+              company_id: selectedCompany.id,
+              company_name: formData.companyName,
+              company_address: formData.companyAddress,
+              drive: formData.drive,
+              type_of_drive: formData.typeOfDrive,
+              follow_up: formData.followUp,
+              is_contacted: formData.isContacted,
+              remarks: formData.remarks,
+              contact_details: formData.contactDetails,
+              hr1_details: formData.hr1Details,
+              hr2_details: formData.hr2Details,
+              package: formData.package,
+              assigned_officer: selectedCompany.assignedOfficer,
+              created_by: user.username
             }),
           });
 
@@ -74,6 +86,7 @@ const Companies: React.FC = () => {
           });
           setIsFormOpen(false);
           setSelectedCompany(null);
+          await fetchCompanies();
           return;
         }
         
