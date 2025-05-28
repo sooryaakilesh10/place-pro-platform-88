@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { User } from '@/types';
 import { useAuth } from '@/contexts/AuthContext';
@@ -57,25 +56,44 @@ const Users: React.FC = () => {
     setUsers(mockUsers);
   }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const newUser: User = {
-      id: Math.random().toString(36).substr(2, 9),
-      username: formData.username,
-      email: formData.email,
-      role: formData.role,
-      createdAt: new Date().toISOString()
-    };
-    
-    setUsers(prev => [...prev, newUser]);
-    setFormData({ username: '', email: '', password: '', role: 'Officer' });
-    setIsFormOpen(false);
-    
-    toast({
-      title: "User Created",
-      description: `User ${newUser.username} has been created successfully.`,
-    });
+    try {
+      const response = await fetch('http://localhost:8080/user/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: formData.username,
+          email: formData.email,
+          password: formData.password,
+          role: formData.role
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create user');
+      }
+
+      const newUser = await response.json();
+      
+      setUsers(prev => [...prev, newUser]);
+      setFormData({ username: '', email: '', password: '', role: 'Officer' });
+      setIsFormOpen(false);
+      
+      toast({
+        title: "User Created",
+        description: `User ${newUser.username} has been created successfully.`,
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to create user. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleDelete = (userId: string) => {
