@@ -58,7 +58,7 @@ const LoginPage: React.FC = () => {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">Welcome Back</CardTitle>
+          <CardTitle className="text-2xl font-bold text-center">Placement portal</CardTitle>
           <CardDescription className="text-center">
             Sign in to your Placement Platform account
           </CardDescription>
@@ -98,14 +98,14 @@ const LoginPage: React.FC = () => {
             </Button>
           </form>
           
-          <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+          {/* <div className="mt-6 p-4 bg-gray-50 rounded-lg">
             <p className="text-sm text-gray-600 mb-2">Demo Credentials:</p>
             <div className="text-xs space-y-1">
               <p><strong>Admin:</strong> admin / password</p>
               <p><strong>Manager:</strong> manager / password</p>
               <p><strong>Officer:</strong> officer / password</p>
             </div>
-          </div>
+          </div> */}
         </CardContent>
       </Card>
     </div>
