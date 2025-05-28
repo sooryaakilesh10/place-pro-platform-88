@@ -1,4 +1,3 @@
-
 export interface User {
   id: string;
   username: string;
@@ -8,7 +7,7 @@ export interface User {
 }
 
 export interface Company {
-  companyID: string;
+  id: string;
   companyName: string;
   companyAddress: string;
   drive: string;
@@ -20,7 +19,7 @@ export interface Company {
   hr1Details: string;
   hr2Details: string;
   package: string;
-  assignedOfficer?: string;
+  assignedOfficer: string[];
   createdAt: string;
   updatedAt: string;
 }

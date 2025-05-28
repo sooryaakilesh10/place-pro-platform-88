@@ -30,7 +30,7 @@ const CompanyForm: React.FC<CompanyFormProps> = ({ company, onSubmit, onCancel }
     hr1Details: '',
     hr2Details: '',
     package: '',
-    assignedOfficer: '',
+    assignedOfficer: [],
   });
 
   const [availableUsers, setAvailableUsers] = useState<User[]>([]);
@@ -62,10 +62,12 @@ const CompanyForm: React.FC<CompanyFormProps> = ({ company, onSubmit, onCancel }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Convert "unassigned" back to empty string for data consistency
+    // Convert assignedOfficer to array if it's a string
     const submitData = {
       ...formData,
-      assignedOfficer: formData.assignedOfficer === 'unassigned' ? '' : formData.assignedOfficer
+      assignedOfficer: Array.isArray(formData.assignedOfficer) 
+        ? formData.assignedOfficer 
+        : formData.assignedOfficer ? [formData.assignedOfficer] : []
     };
     onSubmit(submitData);
   };
@@ -77,14 +79,14 @@ const CompanyForm: React.FC<CompanyFormProps> = ({ company, onSubmit, onCancel }
   const canAssignUsers = user?.role === 'Admin' || user?.role === 'Manager';
 
   const getSelectedUser = () => {
-    return availableUsers.find(u => u.username === formData.assignedOfficer);
+    return availableUsers.find(u => formData.assignedOfficer?.includes(u.username));
   };
 
   const getDisplayValue = () => {
-    if (!formData.assignedOfficer || formData.assignedOfficer === 'unassigned') {
+    if (!formData.assignedOfficer || formData.assignedOfficer.length === 0) {
       return 'unassigned';
     }
-    return formData.assignedOfficer;
+    return formData.assignedOfficer[0];
   };
 
   return (
@@ -187,10 +189,10 @@ const CompanyForm: React.FC<CompanyFormProps> = ({ company, onSubmit, onCancel }
                 <Label className="text-base font-semibold text-blue-900">Assign Officer/Manager</Label>
               </div>
               
-              <Select value={getDisplayValue()} onValueChange={(value) => handleChange('assignedOfficer', value)}>
+              <Select value={getDisplayValue()} onValueChange={(value) => handleChange('assignedOfficer', value === 'unassigned' ? [] : [value])}>
                 <SelectTrigger className="bg-white/80 backdrop-blur-sm border-blue-200/50 hover:bg-white/90 transition-all duration-200">
                   <SelectValue placeholder="Select user to assign">
-                    {formData.assignedOfficer && formData.assignedOfficer !== 'unassigned' && (
+                    {formData.assignedOfficer && formData.assignedOfficer.length > 0 && (
                       <div className="flex items-center space-x-2">
                         <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
                           <UserIcon className="h-3 w-3 text-blue-600" />
@@ -228,7 +230,7 @@ const CompanyForm: React.FC<CompanyFormProps> = ({ company, onSubmit, onCancel }
                 </SelectContent>
               </Select>
 
-              {formData.assignedOfficer && formData.assignedOfficer !== 'unassigned' && (
+              {formData.assignedOfficer && formData.assignedOfficer.length > 0 && (
                 <div className="mt-3 p-3 bg-white/60 backdrop-blur-sm rounded-md border border-blue-200/30">
                   <div className="flex items-center space-x-2">
                     <div className="w-8 h-8 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-full flex items-center justify-center">

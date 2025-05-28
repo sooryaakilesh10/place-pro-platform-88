@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Company } from '@/types';
 import { useAuth } from '@/contexts/AuthContext';
@@ -15,91 +14,117 @@ const Companies: React.FC = () => {
   const [companies, setCompanies] = useState<Company[]>([]);
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   const canCreateCompany = user?.role === 'Admin' || user?.role === 'Manager';
   const canExport = user?.role === 'Admin' || user?.role === 'Manager';
 
-  useEffect(() => {
-    // Mock data - in real app, fetch from API
-    const mockCompanies: Company[] = [
-      {
-        companyID: '1',
-        companyName: 'Tech Solutions Inc',
-        companyAddress: '123 Tech Street, Silicon Valley, CA',
-        drive: 'Campus Drive 2024',
-        typeOfDrive: 'On-Campus',
-        followUp: 'Follow up next week',
-        isContacted: true,
-        remarks: 'Interested in CS students',
-        contactDetails: 'hr@techsolutions.com',
-        hr1Details: 'John Doe - 555-0101',
-        hr2Details: 'Jane Smith - 555-0102',
-        package: '12 LPA',
-        assignedOfficer: 'officer1',
-        createdAt: '2024-01-15T10:30:00Z',
-        updatedAt: '2024-01-20T14:45:00Z'
-      },
-      {
-        companyID: '2',
-        companyName: 'Digital Innovations Ltd',
-        companyAddress: '456 Innovation Drive, Austin, TX',
-        drive: 'Virtual Drive 2024',
-        typeOfDrive: 'Virtual',
-        followUp: 'Awaiting response',
-        isContacted: false,
-        remarks: 'Looking for software engineers',
-        contactDetails: 'careers@digitalinnovations.com',
-        hr1Details: 'Mike Johnson - 555-0201',
-        hr2Details: 'Sarah Wilson - 555-0202',
-        package: '15 LPA',
-        assignedOfficer: 'manager1',
-        createdAt: '2024-01-10T09:15:00Z',
-        updatedAt: '2024-01-18T16:20:00Z'
+  const fetchCompanies = async () => {
+    try {
+      const endpoint = user?.role === 'Officer' 
+        ? `http://localhost:8080/company/list/${user.username}`
+        : 'http://localhost:8080/company/list';
+      
+      const response = await fetch(endpoint);
+      if (!response.ok) {
+        throw new Error('Failed to fetch companies');
       }
-    ];
-    setCompanies(mockCompanies);
+      const data = await response.json();
+      setCompanies(data);
+    } catch (error) {
+      console.error('Error fetching companies:', error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch companies. Please try again later.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCompanies();
   }, []);
 
-  const handleSubmit = (formData: Partial<Company>) => {
-    if (selectedCompany) {
-      // Update existing company
-      if (user?.role === 'Officer') {
-        // For officers, create pending update instead
-        toast({
-          title: "Update Submitted",
-          description: "Your changes have been submitted for approval.",
+  const handleSubmit = async (formData: Partial<Company>) => {
+    try {
+      if (selectedCompany) {
+        // Update existing company
+        if (user?.role === 'Officer') {
+          // For officers, use the temporary update endpoint
+          const response = await fetch('http://localhost:8080/company/temp/update', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              ...formData,
+              companyId: selectedCompany.id
+            }),
+          });
+
+          if (!response.ok) {
+            throw new Error('Failed to submit update request');
+          }
+
+          toast({
+            title: "Update Submitted",
+            description: "Your changes have been submitted for approval.",
+          });
+          setIsFormOpen(false);
+          setSelectedCompany(null);
+          return;
+        }
+        
+        const response = await fetch(`http://localhost:8080/company/update/${selectedCompany.id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formData),
         });
-        setIsFormOpen(false);
-        setSelectedCompany(null);
-        return;
+
+        if (!response.ok) {
+          throw new Error('Failed to update company');
+        }
+
+        toast({
+          title: "Company Updated",
+          description: "Company details have been updated successfully.",
+        });
+      } else {
+        // Create new company
+        const response = await fetch('http://localhost:8080/company/create', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formData),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to create company');
+        }
+
+        toast({
+          title: "Company Created",
+          description: "New company has been added successfully.",
+        });
       }
       
-      setCompanies(prev => prev.map(company => 
-        company.companyID === selectedCompany.companyID 
-          ? { ...company, ...formData, updatedAt: new Date().toISOString() }
-          : company
-      ));
+      // Refresh the companies list
+      await fetchCompanies();
+      setIsFormOpen(false);
+      setSelectedCompany(null);
+    } catch (error) {
+      console.error('Error saving company:', error);
       toast({
-        title: "Company Updated",
-        description: "Company details have been updated successfully.",
-      });
-    } else {
-      // Create new company
-      const newCompany: Company = {
-        companyID: Math.random().toString(36).substr(2, 9),
-        ...formData as Company,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
-      setCompanies(prev => [...prev, newCompany]);
-      toast({
-        title: "Company Created",
-        description: "New company has been added successfully.",
+        title: "Error",
+        description: "Failed to save company. Please try again.",
+        variant: "destructive",
       });
     }
-    
-    setIsFormOpen(false);
-    setSelectedCompany(null);
   };
 
   const handleEdit = (company: Company) => {
@@ -107,18 +132,43 @@ const Companies: React.FC = () => {
     setIsFormOpen(true);
   };
 
-  const handleDelete = (companyId: string) => {
-    setCompanies(prev => prev.filter(company => company.companyID !== companyId));
-    toast({
-      title: "Company Deleted",
-      description: "Company has been removed from the system.",
-    });
+  const handleDelete = async (companyId: string) => {
+    try {
+      const response = await fetch(`http://localhost:8080/company/delete/${companyId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete company');
+      }
+
+      await fetchCompanies();
+      toast({
+        title: "Company Deleted",
+        description: "Company has been removed from the system.",
+      });
+    } catch (error) {
+      console.error('Error deleting company:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete company. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleCreateNew = () => {
     setSelectedCompany(null);
     setIsFormOpen(true);
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
