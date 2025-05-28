@@ -22,38 +22,24 @@ const Users: React.FC = () => {
   });
 
   useEffect(() => {
-    // Mock data - in real app, fetch from API
-    const mockUsers: User[] = [
-      {
-        id: '1',
-        username: 'admin',
-        email: 'admin@company.com',
-        role: 'Admin',
-        createdAt: '2024-01-01T00:00:00Z'
-      },
-      {
-        id: '2',
-        username: 'manager1',
-        email: 'manager1@company.com',
-        role: 'Manager',
-        createdAt: '2024-01-05T00:00:00Z'
-      },
-      {
-        id: '3',
-        username: 'officer1',
-        email: 'officer1@company.com',
-        role: 'Officer',
-        createdAt: '2024-01-10T00:00:00Z'
-      },
-      {
-        id: '4',
-        username: 'officer2',
-        email: 'officer2@company.com',
-        role: 'Officer',
-        createdAt: '2024-01-12T00:00:00Z'
+    const fetchUsers = async () => {
+      try {
+        const response = await fetch('http://localhost:8080/user/list');
+        if (!response.ok) {
+          throw new Error('Failed to fetch users');
+        }
+        const data = await response.json();
+        setUsers(data);
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to fetch users. Please try again.",
+          variant: "destructive",
+        });
       }
-    ];
-    setUsers(mockUsers);
+    };
+
+    fetchUsers();
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
